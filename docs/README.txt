@@ -1,12 +1,23 @@
-README
-======
 
-This directory should be used to place project specfic documentation including
-but not limited to project notes, generated API/phpdoc documentation, or
-manual files generated or hand written.  Ideally, this directory would remain
-in your development environment only and should not be deployed with your
-application to it's final production location.
 
+About
+=====
+
+Author: Anton Fischer <a.fschr@gmail.com>
+
+
+Creating Zend Framework Application by command tools:
+=====================================================
+$ cd extjs-form-from-zf/
+$ zf create project ./
+$ zf enable layout
+$ zf configure db-adapter "adapter=pdo_pgsql&host=127.0.0.1&port=5432&dbname=effzf&username=effzf&password=pass"
+
+
+Links
+=====
+
+http://framework.zend.com/manual/1.10/en/zend.tool.usage.cli.html
 
 Setting Up Your VHOST
 =====================
@@ -14,13 +25,13 @@ Setting Up Your VHOST
 The following is a sample VHOST you might want to consider for your project.
 
 <VirtualHost *:80>
-   DocumentRoot "/home/lenin/php/extjs-form-from-zf/public"
+   DocumentRoot "/home/***/php/extjs-form-from-zf/public"
    ServerName extjs-form-from-zf.local
 
    # This should be omitted in the production environment
    SetEnv APPLICATION_ENV development
 
-   <Directory "/home/lenin/php/extjs-form-from-zf/public">
+   <Directory "/home/***/php/extjs-form-from-zf/public">
        Options Indexes MultiViews FollowSymLinks
        AllowOverride All
        Order allow,deny
