@@ -14,10 +14,10 @@ Use sql/schema.sql and sql/data-example.sql
 
 Creating Zend Framework Application by command tools:
 =====================================================
-$ cd extjs-form-from-zf/
+$ cd extjs-generator-from-zf/
 $ zf create project ./
 $ zf enable layout
-$ zf configure db-adapter "adapter=pdo_pgsql&host=127.0.0.1&port=5432&dbname=effzf&username=effzf&password=pass"
+$ zf configure db-adapter "adapter=pdo_pgsql&host=127.0.0.1&port=5432&dbname=egfzf&username=egfzf&password=pass"
 $ zf create db-table.from-database
 $ zf create controller ExtjsGenerator
 
@@ -75,13 +75,13 @@ Setting Up Your VHOST
 The following is a sample VHOST you might want to consider for your project.
 
 <VirtualHost *:80>
-   DocumentRoot "/home/***/php/extjs-form-from-zf/public"
-   ServerName extjs-form-from-zf.local
+   DocumentRoot "/home/***/php/extjs-generator-from-zf/public"
+   ServerName extjs-generator-from-zf.local
 
    # This should be omitted in the production environment
    SetEnv APPLICATION_ENV development
 
-   <Directory "/home/***/php/extjs-form-from-zf/public">
+   <Directory "/home/***/php/extjs-generator-from-zf/public">
        Options Indexes MultiViews FollowSymLinks
        AllowOverride All
        Order allow,deny

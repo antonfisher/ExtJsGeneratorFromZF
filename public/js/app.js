@@ -14,7 +14,7 @@ Ext.application({
             layout: 'fit',
             items: [
                 {
-                    title: 'Generate ExtJs Form from Zend Framework DbModel',
+                    title: 'Generate ExtJs Grids and Forms from Zend Framework DbModel',
                     html : 'Good news evety one!'
                 }
             ]
