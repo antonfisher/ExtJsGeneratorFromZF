@@ -1,0 +1,6 @@
+.icon-button-add {
+    background: url('/js/extjs/resources/themes/images/default/grid/drop-yes.gif');
+}
+.icon-button-delete {
+    background: url('/js/extjs/resources/themes/images/default/grid/drop-no.gif');
+}

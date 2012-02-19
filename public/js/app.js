@@ -1,23 +1,27 @@
 Ext.Loader.setConfig({
-    enabled:true,
+    enabled: true,
     paths: {
-        'App': '/js/app',
-        'Ext': '/js/extjs/src'
+        'Ext':  '/js/extjs/src',
+        'App':  '/js/app',
+        'ExtG': '/js/extjs-generator'
     }
 });
-Ext.QuickTips.init();
 
 Ext.application({
     name: 'App',
-    launch: function() {
+    appFolder: '/js/app',
+
+    controllers: [
+        'DbAdmin'
+    ],
+
+    launch: function () {
         Ext.create('Ext.container.Viewport', {
             layout: 'fit',
-            items: [
-                {
-                    title: 'Generate ExtJs Grids and Forms from Zend Framework DbModel',
-                    html : 'Good news evety one!'
-                }
-            ]
+            items: {
+                xtype: 'dbAdmin-Viewport'
+            }
         });
     }
 });
+
