@@ -52,6 +52,21 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
         return $this->getAdapter()->fetchOne($select);
     }
     
+    public function extjsStoreUpdate(array $arrItem, array $arrParams = array()) {
+        try {
+            $arrPrimaryKeys = array_flip($this->info('primary'));
+            if (0 == count(array_diff_key($arrPrimaryKeys, $arrItem))) {
+                $arrPrimaryData = array_diff_key($arrItem, array_diff_key($arrItem, $arrPrimaryKeys));
+                $objRow = $this->find($arrPrimaryData)->current();
+                $objRow->setFromArray($this->_normalizeFieldsTypes($arrItem));
+                return $objRow->save();
+            }
+        } catch (Exception $e) {
+            // ---
+        }
+        return false;
+    }
+    
     public function getExtjsStoreReadSelect(array $arrParams = array())
     {
         $select = $this->select();
@@ -76,6 +91,17 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
         }
         
         return $select;
+    }
+    
+    protected function _normalizeFieldsTypes(array $arrItem)
+    {
+        foreach ($arrItem as &$value) {
+            $value = ($value === '' ? null : $value);
+            $value = (is_bool($value) ? ($value ? '1' : '0') : $value);
+        }
+        unset($value);
+        
+        return $arrItem;
     }
     
 }

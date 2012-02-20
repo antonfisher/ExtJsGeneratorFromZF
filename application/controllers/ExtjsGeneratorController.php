@@ -29,25 +29,37 @@ class ExtjsGeneratorController extends Zend_Controller_Action
     public function storeReadAction()
     {
         $extjsGenerator = new ExtjsGenerator_ExtjsGenerator();
-        $this->view->jsCode = $extjsGenerator->storeRead($this->_getParam('dbmodel'), $this->_request->getParams());
+        $this->view->jsCode = $extjsGenerator->storeAction(
+            ExtjsGenerator_ExtjsGenerator::STORE_ACTION_READ,
+            $this->getRequest()
+        );
     }
     
     public function storeCreateAction()
     {
         $extjsGenerator = new ExtjsGenerator_ExtjsGenerator();
-        $this->view->jsCode = $extjsGenerator->storeCreate($this->_getParam('dbmodel'), $this->_request->getParams());
+        $this->view->jsCode = $extjsGenerator->storeAction(
+            ExtjsGenerator_ExtjsGenerator::STORE_ACTION_CREATE,
+            $this->getRequest()
+        );
     }
     
     public function storeUpdateAction()
     {
         $extjsGenerator = new ExtjsGenerator_ExtjsGenerator();
-        $this->view->jsCode = $extjsGenerator->storeUpdate($this->_getParam('dbmodel'), $this->_request->getParams());
+        $this->view->jsCode = $extjsGenerator->storeAction(
+            ExtjsGenerator_ExtjsGenerator::STORE_ACTION_UPDATE,
+            $this->getRequest()
+        );
     }
     
-    public function storeDeleteAction()
+    public function storeDestroyAction()
     {
         $extjsGenerator = new ExtjsGenerator_ExtjsGenerator();
-        $this->view->jsCode = $extjsGenerator->storeDelete($this->_getParam('dbmodel'), $this->_request->getParams());
+        $this->view->jsCode = $extjsGenerator->storeAction(
+            ExtjsGenerator_ExtjsGenerator::STORE_ACTION_DESTROY,
+            $this->getRequest()
+        );
     }
     
     public function viewAction()

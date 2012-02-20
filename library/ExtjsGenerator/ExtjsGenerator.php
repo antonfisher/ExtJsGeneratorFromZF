@@ -1,6 +1,12 @@
 <?php
 
 class ExtjsGenerator_ExtjsGenerator {
+
+    const STORE_ACTION_READ    = 'read';
+    const STORE_ACTION_CREATE  = 'create';
+    const STORE_ACTION_UPDATE  = 'update';
+    const STORE_ACTION_DESTROY = 'destroy';
+
     
     public function getModelCode($jsName) {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -89,7 +95,8 @@ class ExtjsGenerator_ExtjsGenerator {
         $dbModel     = $this->_getDbModelByName($dbModelName);
         
         $jsonParams = array(
-            'extend' => 'ExtG.grid.FormEditPanel',
+            //'extend' => 'ExtG.grid.FormEditPanel',
+            'extend' => 'ExtG.grid.RowEditPanel',
             'alias'  => 'widget.Extjs-generator-view-type-grid-dbmodel-' . $dbModelName,
             'store'  => $dbModelName,
             'title'  => $dbModelName,
@@ -140,33 +147,56 @@ class ExtjsGenerator_ExtjsGenerator {
         return $jsCode;
     }
     
-    public function storeRead($jsName, array $arrParams = array()) {
+    public function storeAction($actionType, Zend_Controller_Request_Abstract $request) {
         $success    = true;
         $message    = '';
         $arrData    = array();
         $totalCount = null;
         
         try {
-            $dbModelName = $this->_getDbModelNameByJsName($jsName);
+            $dbModelName = $this->_getDbModelNameByJsName($request->getParam('dbmodel'));
             $dbModel     = $this->_getDbModelByName($dbModelName);
 
             $arrParams = array(
-                'limit'  => (isset($arrParams['limit']) ? $arrParams['limit'] : 100),
-                'start'  => (isset($arrParams['start']) ? $arrParams['start'] : 0),
-                'sort'   => (isset($arrParams['sort']) ? $this->_extjsStoreSortToArray($arrParams['sort']) : array()),
-                'params' => (isset($arrParams['params']) ? Zend_Json_Decoder::decode($arrParams['params']) : array()),
+                'limit'  => $request->getParam('limit', 100),
+                'start'  => $request->getParam('start', 0),
+                'sort'   => (
+                    $request->getParam('sort') ? $this->_extjsStoreSortToArray($request->getParam('sort')) : array()
+                ),
+                'params' => (
+                    $request->getParam('params') ? Zend_Json_Decoder::decode($request->getParam('params')) : array()
+                ),
             );
             
-            $arrData = $dbModel->extjsStoreRead($arrParams);
+            $arrRawBody = $this->_getArrayFromRawBody($request->getRawBody());
             
-            if (count($arrData) < $arrParams['limit'] && $arrParams['start'] == 0) {
-                $totalCount = count($arrData);
-            } else {
-                $totalCount = $dbModel->extjsStoreReadCount($arrParams);
+            switch ($actionType) {
+                case self::STORE_ACTION_READ:
+                    $arrData = $dbModel->extjsStoreRead($arrParams);
+                    if (count($arrData) < $arrParams['limit'] && $arrParams['start'] == 0) {
+                        $totalCount = count($arrData);
+                    } else {
+                        $totalCount = $dbModel->extjsStoreReadCount($arrParams);
+                    }
+                    break;
+                case self::STORE_ACTION_CREATE:
+                    $arrData = $dbModel->extjsStoreCreate($arrRawBody, $arrParams);
+                    break;
+                case self::STORE_ACTION_UPDATE:
+                    foreach ($arrRawBody as $arrItem) {
+                        $dbModel->extjsStoreUpdate($arrItem, $arrParams);
+                    }
+                    break;
+                case self::STORE_ACTION_DESTROY:
+                    $arrData = $dbModel->extjsStoreDestroy($arrRawBody, $arrParams);
+                    break;
+                default:
+                    throw new Exception('Not valid store action.');
+                    break;
             }
         } catch (Zend_Exception $e) {
             $success = false;
-            $message = 'Store read: ' . $e->getMessage();
+            $message = 'Store action: ' . $e->getMessage();
         }
 
         return Zend_Json_Encoder::encode(
@@ -179,6 +209,20 @@ class ExtjsGenerator_ExtjsGenerator {
         );
     }
     
+    protected function _getArrayFromRawBody($rawBody)
+    {
+        $arrRawBody = array();
+        try {
+            $arrRawBody = Zend_Json::decode($rawBody);
+            if (!isset($arrRawBody[0]) || !is_array($arrRawBody[0])) {
+                $arrRawBody = array($arrRawBody);
+            }
+        } catch(Zend_Json_Exception $e) {
+            // --
+        }
+        return $arrRawBody;
+    }
+
     protected function _extjsStoreSortToArray($sort) {
         return $sort;
     }
@@ -205,18 +249,21 @@ class ExtjsGenerator_ExtjsGenerator {
                 break;
         }
         
-        $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap);
+        $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap, false);
         
         return $jsonParams;
     }
     
-    protected function _getEditorFromDbRow($field, array $arrDescription, $referenceMap)
+    protected function _getEditorFromDbRow($field, array $arrDescription, $referenceMap, $showFieldLabel = true)
     {   
         $jsonParams = array(
             'name'       => $field,
-            'fieldLabel' => $field,
             'xtype'      => 'textfield',
         );
+        
+        if ($showFieldLabel) {
+            $jsonParams['fieldLabel'] = $field;
+        }
 
         switch ($arrDescription['DATA_TYPE']) {
             case 'int4':
