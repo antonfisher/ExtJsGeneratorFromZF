@@ -5,6 +5,7 @@ Ext.define('App.controller.DbAdmin', {
         'dbAdmin.Viewport',
     ],
     
+    //TODO remove router for store
     stores: [
         'Bouquets',
         'Flowers'

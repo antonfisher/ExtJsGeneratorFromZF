@@ -8,10 +8,6 @@ class ExtjsGeneratorController extends Zend_Controller_Action
         Zend_Layout::getMvcInstance()->disableLayout();
         $this->_response->setHeader('Content-Type', 'text/javascript; charset=UTF-8');
         $this->_helper->viewRenderer->setScriptAction('js');
-
-        //ExtJS POST/PUT data
-        //$this->_jsonData = Extjs::getArrayFromRawBody($this->getRequest()->getRawBody());
-
     }
     
     public function modelAction()

@@ -74,7 +74,10 @@ class ExtjsGenerator_ExtjsGenerator {
     {
         $jsCode = "console.log('Generate view error!');";
         switch ($type) {
+            //TODO расширить до:
             case 'grid':
+            case 'grid-row-edit':
+            case 'grid-form-edit':
                 $jsCode = $this->_getGridCode($dbModel);
                 break;
             case 'form':
@@ -112,6 +115,8 @@ class ExtjsGenerator_ExtjsGenerator {
         $jsCode = "console.log('Generate grid: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('Extjs-generator.view.type.grid.dbmodel.{$dbModelName}', {$jsonParams})";
 
+        //TODO renderer for grid dependency tables
+        
         return $jsCode;
     }
     
@@ -170,6 +175,8 @@ class ExtjsGenerator_ExtjsGenerator {
             
             $arrRawBody = $this->_getArrayFromRawBody($request->getRawBody());
             
+            $dbModel->getAdapter()->beginTransaction();
+            
             switch ($actionType) {
                 case self::STORE_ACTION_READ:
                     $arrData = $dbModel->extjsStoreRead($arrParams);
@@ -180,7 +187,11 @@ class ExtjsGenerator_ExtjsGenerator {
                     }
                     break;
                 case self::STORE_ACTION_CREATE:
-                    $arrData = $dbModel->extjsStoreCreate($arrRawBody, $arrParams);
+                    foreach ($arrRawBody as &$arrItem) {
+                        //возвращать arrItems обратно клиенту
+                        $arrItem['id'] = $dbModel->extjsStoreCreate($arrItem, $arrParams);
+                    }
+                    unset($arrItem);
                     break;
                 case self::STORE_ACTION_UPDATE:
                     foreach ($arrRawBody as $arrItem) {
@@ -188,11 +199,19 @@ class ExtjsGenerator_ExtjsGenerator {
                     }
                     break;
                 case self::STORE_ACTION_DESTROY:
-                    $arrData = $dbModel->extjsStoreDestroy($arrRawBody, $arrParams);
+                    foreach ($arrRawBody as $arrItem) {
+                        $dbModel->extjsStoreDestroy($arrItem, $arrParams);
+                    }
                     break;
                 default:
                     throw new Exception('Not valid store action.');
                     break;
+            }
+            
+            if ($success) {
+                $dbModel->getAdapter()->commit();
+            } else {
+                $dbModel->getAdapter()->rollBack();
             }
         } catch (Zend_Exception $e) {
             $success = false;
@@ -226,7 +245,6 @@ class ExtjsGenerator_ExtjsGenerator {
     protected function _extjsStoreSortToArray($sort) {
         return $sort;
     }
-
 
     protected function _getGridColumnFromDbRow($field, array $arrDescription, $referenceMap)
     {
@@ -296,7 +314,7 @@ class ExtjsGenerator_ExtjsGenerator {
         $dbModelName = 'Application_Model_DbTable_' . $dbModelName;
         
         if (!class_exists($dbModelName)) {
-            throw new Exception('ExtjsGenerator: class does not exist: ' . $dbModelName);
+            throw new Exception('ExtjsGenerator: dbmodel class does not exist: ' . $dbModelName);
         }
         
         return new $dbModelName();
