@@ -3,7 +3,7 @@ Ext.define('ExtG.grid.FormEditPanel', {
     alias: 'widget.ExtG-grid-FormEditPanel',
     split: true,
     selType: 'rowmodel',
-    
+
     // custom
 //    storeAutoLoad: true,
 
@@ -11,19 +11,19 @@ Ext.define('ExtG.grid.FormEditPanel', {
     showConfirmDestroy: true,
     confirmDestroyTitle: 'Confirm',
     confirmDestroyText: 'You are sure?',
-    
+
     initComponent: function() {
         var me = this;
-        
+
         me.tbar = [
             {
-                text: 'Add',
+                text: '✓ Add',
                 role: 'create',
-                iconCls: 'icon-button-add',
                 listeners: {
                     click: function(obj){
-                        var w = Ext.create('Extjs-generator.view.type.form-window.dbmodel.' + me.store.storeId);
-                        
+                        //TODO mask
+                        var w = Ext.create('Extjs-generator.view.type.formWindow.dbmodel.' + me.store.storeId);
+
                         w.down('button').addListener('click', function(obj){
                             var form = obj.up('form');
                             if (!form.url) {
@@ -38,16 +38,14 @@ Ext.define('ExtG.grid.FormEditPanel', {
                                 w.destroy();
                             }
                         });
-                        
+
                         w.show();
                     }
                 }
             }, '-', {
-                text: 'Delete',
+                text: '✕ Delete',
                 role: 'remove',
                 disabled: false,
-                //itemId: 'grid-delete',
-                iconCls: 'icon-button-delete',
                 listeners: {
                     click: function(obj) {
                         var selection = me.getView().getSelectionModel().getSelection()[0];
@@ -68,7 +66,7 @@ Ext.define('ExtG.grid.FormEditPanel', {
                 }
             }
         ];
-        
+
         this.callParent(arguments);
     }
 

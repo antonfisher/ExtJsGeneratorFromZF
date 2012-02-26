@@ -3,7 +3,7 @@ Ext.define('ExtG.grid.RowEditPanel', {
     alias: 'widget.ExtG-grid-RowEditPanel',
     split: true,
     selType: 'rowmodel',
-    
+
     // custom
 //    storeAutoLoad: true,
 
@@ -11,7 +11,7 @@ Ext.define('ExtG.grid.RowEditPanel', {
     showConfirmDestroy: true,
     confirmDestroyTitle: 'Confirm',
     confirmDestroyText: 'You are sure?',
-    
+
     initComponent: function() {
         var me = this;
 
@@ -20,7 +20,7 @@ Ext.define('ExtG.grid.RowEditPanel', {
         //});
 
         //me.store.addListener('beforesync', function(){
-        //    
+        //
         //});
 
         var rowEditing = Ext.create('Ext.grid.plugin.RowEditing');
@@ -28,12 +28,11 @@ Ext.define('ExtG.grid.RowEditPanel', {
         this.plugins = [
             rowEditing
         ];
-        
+
         me.tbar = [
             {
-                text: 'Add',
+                text: '✓ Add',
                 role: 'create',
-                iconCls: 'icon-button-add',
                 listeners: {
                     click: function(obj){
                         var modelName = me.store.storeId;
@@ -43,11 +42,9 @@ Ext.define('ExtG.grid.RowEditPanel', {
                     }
                 }
             }, '-', {
-                text: 'Delete',
+                text: '✕ Delete',
                 role: 'remove',
                 disabled: false,
-                //itemId: 'grid-delete',
-                iconCls: 'icon-button-delete',
                 listeners: {
                     click: function(obj) {
                         var selection = me.getView().getSelectionModel().getSelection()[0];
@@ -68,9 +65,9 @@ Ext.define('ExtG.grid.RowEditPanel', {
                 }
             }
         ];
-        
+
         this.callParent(arguments);
-        
+
         //if (this.storeAutoLoad) {
         //    me.store.load();
         //    me.doLayout();

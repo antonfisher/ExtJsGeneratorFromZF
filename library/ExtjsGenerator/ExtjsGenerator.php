@@ -1,14 +1,23 @@
 <?php
 
-class ExtjsGenerator_ExtjsGenerator {
+class ExtjsGenerator_ExtjsGenerator
+{
 
     const STORE_ACTION_READ    = 'read';
     const STORE_ACTION_CREATE  = 'create';
     const STORE_ACTION_UPDATE  = 'update';
     const STORE_ACTION_DESTROY = 'destroy';
 
-    
-    public function getModelCode($jsName) {
+    const VIEW_GRID           = 'grid';
+    const VIEW_GRID_FORM_EDIT = 'gridFormEdit';
+    const VIEW_GRID_ROW_EDIT  = 'gridRowEdit';
+
+    const VIEW_FORM        = 'form';
+    const VIEW_FORM_WINDOW = 'formWindow';
+
+
+    public function getModelCode($jsName)
+    {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
         $dbModel     = $this->_getDbModelByName($dbModelName);
 
@@ -18,14 +27,15 @@ class ExtjsGenerator_ExtjsGenerator {
         );
 
         $jsonParams = Zend_Json_Encoder::encode($jsonParams);
-        
+
         $jsCode = "console.log('Generate model: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('App.model.{$dbModelName}', {$jsonParams});";
 
         return $jsCode;
     }
-    
-    public function getStoreCode($jsName) {
+
+    public function getStoreCode($jsName)
+    {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
 
         $jsonParams = array(
@@ -61,7 +71,7 @@ class ExtjsGenerator_ExtjsGenerator {
                 ),
             ),
         );
-                    
+
         $jsonParams = Zend_Json_Encoder::encode($jsonParams);
 
         $jsCode = "console.log('Generate store: {$dbModelName}.js'); ";
@@ -69,61 +79,73 @@ class ExtjsGenerator_ExtjsGenerator {
 
         return $jsCode;
     }
-    
+
     public function getViewCode($type, $dbModel)
     {
         $jsCode = "console.log('Generate view error!');";
         switch ($type) {
             //TODO расширить до:
-            case 'grid':
-            case 'grid-row-edit':
-            case 'grid-form-edit':
-                $jsCode = $this->_getGridCode($dbModel);
+            case self::VIEW_GRID:
+            case self::VIEW_GRID_FORM_EDIT:
+            case self::VIEW_GRID_ROW_EDIT:
+                $jsCode = $this->_getGridCode($dbModel, $type);
                 break;
-            case 'form':
+            case self::VIEW_FORM:
                 $jsCode = $this->_getFormCode($dbModel);
                 break;
-            case 'form-window':
+            case self::VIEW_FORM_WINDOW:
                 $jsCode = $this->_getFormWindowCode($dbModel);
                 break;
             default :
                 break;
         }
-        
+
         return $jsCode;
     }
-    
-    public function _getGridCode($jsName) {
+
+    public function _getGridCode($jsName, $type = self::VIEW_GRID)
+    {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
         $dbModel     = $this->_getDbModelByName($dbModelName);
-        
+
         $jsonParams = array(
-            //'extend' => 'ExtG.grid.FormEditPanel',
-            'extend' => 'ExtG.grid.RowEditPanel',
-            'alias'  => 'widget.Extjs-generator-view-type-grid-dbmodel-' . $dbModelName,
+            'extend' => 'ExtG.grid.Panel',
+            'alias'  => "widget.Extjs-generator-view-type-{$type}-dbmodel-{$dbModelName}",
             'store'  => $dbModelName,
             'title'  => $dbModelName,
         );
 
-        $referenceMap = $dbModel->info('referenceMap');
-        foreach ($dbModel->info('metadata') as $field => $arrDescription) {
+        switch ($type) {
+            case self::VIEW_GRID_FORM_EDIT:
+                $jsonParams['extend'] = 'ExtG.grid.FormEditPanel';
+                break;
+            case self::VIEW_GRID_ROW_EDIT:
+                $jsonParams['extend'] = 'ExtG.grid.RowEditPanel';
+                break;
+            default :
+                break;
+        }
+
+        $referenceMap = $dbModel->info(Zend_Db_Table::REFERENCE_MAP);
+        foreach ($dbModel->info(Zend_Db_Table::METADATA) as $field => $arrDescription) {
             $jsonParams['columns'][] = $this->_getGridColumnFromDbRow($field, $arrDescription, $referenceMap);
         }
-        
+
         $jsonParams = Zend_Json_Encoder::encode($jsonParams);
-        
+
         $jsCode = "console.log('Generate grid: {$dbModelName}.js'); ";
-        $jsCode .= "Ext.define('Extjs-generator.view.type.grid.dbmodel.{$dbModelName}', {$jsonParams})";
+        $jsCode .= "Ext.define('Extjs-generator.view.type.{$type}.dbmodel.{$dbModelName}', {$jsonParams})";
 
         //TODO renderer for grid dependency tables
-        
+
         return $jsCode;
     }
-    
-    public function _getFormWindowCode($jsName) {
+
+    public function _getFormWindowCode($jsName)
+    {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
         $dbModel     = $this->_getDbModelByName($dbModelName);
-        
+
         $jsonParams = array(
             'extend' => 'Ext.window.Window',
             'title'  => $dbModelName,
@@ -139,25 +161,27 @@ class ExtjsGenerator_ExtjsGenerator {
             )
         );
 
-        $referenceMap = $dbModel->info('referenceMap');
-        foreach ($dbModel->info('metadata') as $field => $arrDescription) {
+        $referenceMap = $dbModel->info(Zend_Db_Table::REFERENCE_MAP);
+        foreach ($dbModel->info(Zend_Db_Table::METADATA) as $field => $arrDescription) {
             $jsonParams['items']['items'][] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap);
         }
-        
+
         $jsonParams = Zend_Json_Encoder::encode($jsonParams);
-        
-        $jsCode = "console.log('Generate form-window: {$dbModelName}.js'); ";
-        $jsCode .= "Ext.define('Extjs-generator.view.type.form-window.dbmodel.{$dbModelName}', {$jsonParams})";
+
+        $jsCode = "console.log('Generate formWindow: {$dbModelName}.js'); ";
+        $jsCode .= "Ext.define('Extjs-generator.view.type." . self::VIEW_FORM_WINDOW
+                . ".dbmodel.{$dbModelName}', {$jsonParams})";
 
         return $jsCode;
     }
-    
-    public function storeAction($actionType, Zend_Controller_Request_Abstract $request) {
+
+    public function storeAction($actionType, Zend_Controller_Request_Abstract $request)
+    {
         $success    = true;
         $message    = '';
         $arrData    = array();
         $totalCount = null;
-        
+
         try {
             $dbModelName = $this->_getDbModelNameByJsName($request->getParam('dbmodel'));
             $dbModel     = $this->_getDbModelByName($dbModelName);
@@ -172,11 +196,11 @@ class ExtjsGenerator_ExtjsGenerator {
                     $request->getParam('params') ? Zend_Json_Decoder::decode($request->getParam('params')) : array()
                 ),
             );
-            
+
             $arrRawBody = $this->_getArrayFromRawBody($request->getRawBody());
-            
+
             $dbModel->getAdapter()->beginTransaction();
-            
+
             switch ($actionType) {
                 case self::STORE_ACTION_READ:
                     $arrData = $dbModel->extjsStoreRead($arrParams);
@@ -207,7 +231,7 @@ class ExtjsGenerator_ExtjsGenerator {
                     throw new Exception('Not valid store action.');
                     break;
             }
-            
+
             if ($success) {
                 $dbModel->getAdapter()->commit();
             } else {
@@ -227,7 +251,7 @@ class ExtjsGenerator_ExtjsGenerator {
             )
         );
     }
-    
+
     protected function _getArrayFromRawBody($rawBody)
     {
         $arrRawBody = array();
@@ -242,7 +266,8 @@ class ExtjsGenerator_ExtjsGenerator {
         return $arrRawBody;
     }
 
-    protected function _extjsStoreSortToArray($sort) {
+    protected function _extjsStoreSortToArray($sort)
+    {
         return $sort;
     }
 
@@ -266,25 +291,27 @@ class ExtjsGenerator_ExtjsGenerator {
             default:
                 break;
         }
-        
+
         $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap, false);
-        
+
         return $jsonParams;
     }
-    
+
     protected function _getEditorFromDbRow($field, array $arrDescription, $referenceMap, $showFieldLabel = true)
-    {   
+    {
         $jsonParams = array(
-            'name'       => $field,
-            'xtype'      => 'textfield',
+            'name'  => $field,
+            'xtype' => 'textfield',
         );
-        
+
         if ($showFieldLabel) {
             $jsonParams['fieldLabel'] = $field;
         }
 
         switch ($arrDescription['DATA_TYPE']) {
             case 'int4':
+            case 'int8':
+            case 'float8':
             case 'numeric':
                 $jsonParams['xtype'] = 'numberfield';
                 break;
@@ -292,6 +319,7 @@ class ExtjsGenerator_ExtjsGenerator {
             case 'bool':
                 $jsonParams['xtype'] = 'checkboxfield';
                 break;
+            case 'date':
             case 'timestamp':
                 $jsonParams['xtype'] = 'datefield';
                 break;
@@ -300,27 +328,34 @@ class ExtjsGenerator_ExtjsGenerator {
                 break;
         }
 
+        $jsonParams['allowBlank'] = $arrDescription['NULLABLE'];
+
+        $jsonParams['disabled'] = $arrDescription['PRIMARY'];
+
         return $jsonParams;
     }
-    
-    protected function _getDbModelNameByJsName($jsName) {
+
+    protected function _getDbModelNameByJsName($jsName)
+    {
         return str_replace('.js', '', $jsName);
     }
-    
+
     /**
      * @return Zend_Db_Table
      */
-    protected function _getDbModelByName($dbModelName) {
+    protected function _getDbModelByName($dbModelName)
+    {
         $dbModelName = 'Application_Model_DbTable_' . $dbModelName;
-        
+
         if (!class_exists($dbModelName)) {
             throw new Exception('ExtjsGenerator: dbmodel class does not exist: ' . $dbModelName);
         }
-        
+
         return new $dbModelName();
     }
-    
-    protected function _makeJsCode(array $arrCode) {
+
+    protected function _makeJsCode(array $arrCode)
+    {
         return Zend_Json_Encoder::encode($arrCode);
     }
 
