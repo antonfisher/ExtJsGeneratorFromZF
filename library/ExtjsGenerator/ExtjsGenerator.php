@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Abstract model for Extjs generator
+ *
+ * @category  ExtjsGenerator
+ * @package   ExtjsGenerator_ExtjsGenerator
+ * @author    Anton Fischer <a.fschr@gmail.com>
+ * @copyright 2012 (c) none
+ * @license   http://none BSD License
+ * @link      https://github.com/antonfisher/ExtJsGeneratorFromZF
+ */
 class ExtjsGenerator_ExtjsGenerator
 {
 
@@ -16,6 +26,14 @@ class ExtjsGenerator_ExtjsGenerator
     const VIEW_FORM_WINDOW = 'formWindow';
 
 
+    /**
+     * Get Extjs model java script code
+     *
+     * @param string $jsName model name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getModelCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -34,6 +52,14 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs store java script code
+     *
+     * @param string $jsName store name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getStoreCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -80,6 +106,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs view (grid, window, form ..) java script code
+     *
+     * @param string $type    type of view
+     * @param string $dbModel db model name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getViewCode($type, $dbModel)
     {
         $jsCode = "console.log('Generate view error!');";
@@ -103,6 +138,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs grid java script code
+     *
+     * @param string $jsName grid name
+     * @param string $type   type of grid
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function _getGridCode($jsName, $type = self::VIEW_GRID)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -141,6 +185,14 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs form window java script code
+     *
+     * @param string $jsName grid name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function _getFormWindowCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -175,6 +227,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs store acrion (update, create, destroy, read)
+     *
+     * @param string                           $actionType update, create, destroy, read
+     * @param Zend_Controller_Request_Abstract $request    request
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function storeAction($actionType, Zend_Controller_Request_Abstract $request)
     {
         $success    = true;
@@ -252,6 +313,14 @@ class ExtjsGenerator_ExtjsGenerator
         );
     }
 
+    /**
+     * Get Extjs store acrion (update, create, destroy, read)
+     *
+     * @param string $rawBody raw http request body
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     protected function _getArrayFromRawBody($rawBody)
     {
         $arrRawBody = array();
@@ -266,6 +335,14 @@ class ExtjsGenerator_ExtjsGenerator
         return $arrRawBody;
     }
 
+    /**
+     * sort
+     *
+     * @param string $sort raw http request body
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     protected function _extjsStoreSortToArray($sort)
     {
         return $sort;
