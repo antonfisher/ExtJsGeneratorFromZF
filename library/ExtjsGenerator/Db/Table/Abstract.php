@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * Abstract model for Extjs generator
+ *
+ * @category  Models
+ * @package   ExtjsGenerator_Db_Table_Abstract
+ * @author    Anton Fischer <a.fschr@gmail.com>
+ * @copyright 2012 (c) none
+ * @license   http://none BSD License
+ * @link      https://github.com/antonfisher/ExtJsGeneratorFromZF
+ */
 abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
 {
-    
+
     /**
      * Getter for _name
      *
@@ -25,25 +35,47 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
         return $this->_schema;
     }
 
+    /**
+     * Get fields with descriptions for Extjs model or form
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
     public function getExtjsModelFields()
     {
         $arrModelFields = array();
 
-        foreach($this->info(self::METADATA) as $field => $arrDescription) {
+        foreach ($this->info(self::METADATA) as $field => $arrDescription) {
             $arrModelFields[] = $field;
         }
 
         return $arrModelFields;
     }
-    
+
+    /**
+     * Get data for Extjs store read action
+     *
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
     public function extjsStoreRead(array $arrParams = array())
     {
         $select = $this->getExtjsStoreReadSelect($arrParams);
         $arrData = $this->fetchAll($select)->toArray();
-        
+
         return $arrData;
     }
-    
+
+    /**
+     * Get count of data for Extjs store read action
+     *
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return integer
+     */
     public function extjsStoreReadCount(array $arrParams = array())
     {
         $select = $this->getExtjsStoreReadSelect($arrParams);
@@ -54,7 +86,16 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
 
         return $this->getAdapter()->fetchOne($select);
     }
-    
+
+    /**
+     * Update data for Extjs store update action
+     *
+     * @param array $arrItem   array for update
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return mixed
+     */
     public function extjsStoreUpdate(array $arrItem, array $arrParams = array())
     {
         $arrPrimaryKeys = array_flip($this->info(self::PRIMARY));
@@ -62,13 +103,22 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
             $arrPrimaryData = array_diff_key($arrItem, array_diff_key($arrItem, $arrPrimaryKeys));
             $objRow = $this->find($arrPrimaryData)->current();
             $objRow->setFromArray($this->_normalizeFieldsTypes($arrItem));
-            
+
             return $objRow->save();
         }
-        
+
         throw new Exception("Primary keys for table '{$this->getName()}' does not defined.");
     }
-    
+
+    /**
+     * Create data for Extjs store create action
+     *
+     * @param array $arrItem   array for create
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return mixed
+     */
     public function extjsStoreCreate(array $arrItem, array $arrParams = array())
     {
         foreach ($this->info(self::PRIMARY) as $primaryKey) {
@@ -76,38 +126,55 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
                 unset($arrItem[$primaryKey]);
             }
         }
-        
+
         $objRow = $this->createRow($this->_normalizeFieldsTypes($arrItem));
-        
+
         return $objRow->save();
     }
-    
+
+    /**
+     * Destroy data for Extjs store destroy action
+     *
+     * @param array $arrItem   array for destroy
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return mixed
+     */
     public function extjsStoreDestroy(array $arrItem, array $arrParams = array())
     {
         $arrPrimaryKeys = array_flip($this->info(self::PRIMARY));
         if (0 == count(array_diff_key($arrPrimaryKeys, $arrItem))) {
             $arrPrimaryData = array_diff_key($arrItem, array_diff_key($arrItem, $arrPrimaryKeys));
             $objRow = $this->find($arrPrimaryData)->current();
-            
+
             if ($objRow) {
                 return $objRow->delete();
             }
-            
+
             throw new Exception("Row does not found in '{$this->getName()}'.");
         }
-        
+
         throw new Exception("Primary keys for table '{$this->getName()}' does not defined.");
     }
-    
+
+    /**
+     * Make select object for Extjs store read action
+     *
+     * @param array $arrParams array of request params
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return Zend_Db_Select
+     */
     public function getExtjsStoreReadSelect(array $arrParams = array())
     {
         $select = $this->select();
-        
+
         if (!empty($arrParams['limit'])) {
             $start = isset($arrParams['start']) ? $arrParams['start'] : 0;
             $select->limit($arrParams['limit'], $start);
         }
-        
+
         if (!empty($arrParams['sort'])) {
             foreach ($arrParams['sort'] as $sortItem) {
                 $select->order($sortItem);
@@ -122,10 +189,45 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
                 $select->order($this->_primary);
             }
         }
-        
+
         return $select;
     }
-    
+
+    /**
+     * Get id-title pairs as assoc array (ex. for comboboxes)
+     *
+     * @param string $columnKey   key column name
+     * @param string $columnValue value colum name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
+    public function getPairs($columnKey, $columnValue)
+    {
+        $arrResult = array();
+
+        $select = $this->select();
+        $select->from(
+            $this->getName(),
+            array($columnKey, $columnValue),
+            $this->getSchema()
+        );
+
+        foreach ($this->fetchAll($select)->toArray() as $item) {
+            $arrResult[($item[$columnKey])] = $item[$columnValue];
+        }
+
+        return $arrResult;
+    }
+
+    /**
+     * Pre-save normalisation db field data by required types
+     *
+     * @param array $arrItem array for normalise
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
     protected function _normalizeFieldsTypes(array $arrItem)
     {
         //TODO на основе metadata привести к нужному типу
@@ -134,9 +236,9 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
             $value = (is_bool($value) ? ($value ? '1' : '0') : $value);
         }
         unset($value);
-        
+
         return $arrItem;
     }
-    
+
 }
 

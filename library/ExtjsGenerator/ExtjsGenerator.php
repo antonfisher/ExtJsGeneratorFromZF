@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Abstract model for Extjs generator
+ *
+ * @category  ExtjsGenerator
+ * @package   ExtjsGenerator_ExtjsGenerator
+ * @author    Anton Fischer <a.fschr@gmail.com>
+ * @copyright 2012 (c) none
+ * @license   http://none BSD License
+ * @link      https://github.com/antonfisher/ExtJsGeneratorFromZF
+ */
 class ExtjsGenerator_ExtjsGenerator
 {
 
@@ -7,6 +17,9 @@ class ExtjsGenerator_ExtjsGenerator
     const STORE_ACTION_CREATE  = 'create';
     const STORE_ACTION_UPDATE  = 'update';
     const STORE_ACTION_DESTROY = 'destroy';
+
+    const STORE_QUERYMODE_LOCAL  = 'local';
+    const STORE_QUERYMODE_REMOTE = 'remote';
 
     const VIEW_GRID           = 'grid';
     const VIEW_GRID_FORM_EDIT = 'gridFormEdit';
@@ -16,6 +29,14 @@ class ExtjsGenerator_ExtjsGenerator
     const VIEW_FORM_WINDOW = 'formWindow';
 
 
+    /**
+     * Get Extjs model java script code
+     *
+     * @param string $jsName model name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getModelCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -26,7 +47,7 @@ class ExtjsGenerator_ExtjsGenerator
             'fields' => $dbModel->getExtjsModelFields(),
         );
 
-        $jsonParams = Zend_Json_Encoder::encode($jsonParams);
+        $jsonParams = $this->_assembleJsCode($jsonParams);
 
         $jsCode = "console.log('Generate model: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('App.model.{$dbModelName}', {$jsonParams});";
@@ -34,6 +55,14 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs store java script code
+     *
+     * @param string $jsName store name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getStoreCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -72,7 +101,7 @@ class ExtjsGenerator_ExtjsGenerator
             ),
         );
 
-        $jsonParams = Zend_Json_Encoder::encode($jsonParams);
+        $jsonParams = $this->_assembleJsCode($jsonParams);
 
         $jsCode = "console.log('Generate store: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('App.store.{$dbModelName}', {$jsonParams});";
@@ -80,6 +109,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs view (grid, window, form ..) java script code
+     *
+     * @param string $type    type of view
+     * @param string $dbModel db model name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function getViewCode($type, $dbModel)
     {
         $jsCode = "console.log('Generate view error!');";
@@ -103,6 +141,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs grid java script code
+     *
+     * @param string $jsName grid name
+     * @param string $type   type of grid
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function _getGridCode($jsName, $type = self::VIEW_GRID)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -131,16 +178,22 @@ class ExtjsGenerator_ExtjsGenerator
             $jsonParams['columns'][] = $this->_getGridColumnFromDbRow($field, $arrDescription, $referenceMap);
         }
 
-        $jsonParams = Zend_Json_Encoder::encode($jsonParams);
+        $jsonParams = $this->_assembleJsCode($jsonParams);
 
         $jsCode = "console.log('Generate grid: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('Extjs-generator.view.type.{$type}.dbmodel.{$dbModelName}', {$jsonParams})";
 
-        //TODO renderer for grid dependency tables
-
         return $jsCode;
     }
 
+    /**
+     * Get Extjs form window java script code
+     *
+     * @param string $jsName grid name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function _getFormWindowCode($jsName)
     {
         $dbModelName = $this->_getDbModelNameByJsName($jsName);
@@ -166,7 +219,7 @@ class ExtjsGenerator_ExtjsGenerator
             $jsonParams['items']['items'][] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap);
         }
 
-        $jsonParams = Zend_Json_Encoder::encode($jsonParams);
+        $jsonParams = $this->_assembleJsCode($jsonParams);
 
         $jsCode = "console.log('Generate formWindow: {$dbModelName}.js'); ";
         $jsCode .= "Ext.define('Extjs-generator.view.type." . self::VIEW_FORM_WINDOW
@@ -175,6 +228,15 @@ class ExtjsGenerator_ExtjsGenerator
         return $jsCode;
     }
 
+    /**
+     * Get Extjs store acrion (update, create, destroy, read)
+     *
+     * @param string                           $actionType update, create, destroy, read
+     * @param Zend_Controller_Request_Abstract $request    request
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     public function storeAction($actionType, Zend_Controller_Request_Abstract $request)
     {
         $success    = true;
@@ -252,6 +314,14 @@ class ExtjsGenerator_ExtjsGenerator
         );
     }
 
+    /**
+     * Get Extjs store acrion (update, create, destroy, read)
+     *
+     * @param string $rawBody raw http request body
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     protected function _getArrayFromRawBody($rawBody)
     {
         $arrRawBody = array();
@@ -266,11 +336,29 @@ class ExtjsGenerator_ExtjsGenerator
         return $arrRawBody;
     }
 
+    /**
+     * sort
+     *
+     * @param string $sort raw http request body
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     protected function _extjsStoreSortToArray($sort)
     {
         return $sort;
     }
 
+    /**
+     * get grid column from db row
+     *
+     * @param string     $field          field name
+     * @param array      $arrDescription field description from Zend model
+     * @param array|null $referenceMap   referenc map from Zend model
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
     protected function _getGridColumnFromDbRow($field, array $arrDescription, $referenceMap)
     {
         $jsonParams = array(
@@ -288,15 +376,35 @@ class ExtjsGenerator_ExtjsGenerator
                 $jsonParams['trueText']  = 'Yes';
                 $jsonParams['falseText'] = 'No';
                 break;
+            case 'date':
+            case 'timestamp':
+                $jsonParams['xtype']  = 'datecolumn';
+                $jsonParams['format'] = 'Y-m-d H:i:s';
+                break;
             default:
                 break;
         }
 
         $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap, false);
 
+        if (isset($jsonParams['editor']['xtype']) && 'combobox' == $jsonParams['editor']['xtype']) {
+            $jsonParams['renderer'] = 'function(){return this.renderComboboxValue.apply(this, arguments)}';
+        }
+
         return $jsonParams;
     }
 
+    /**
+     * get grid column editor from db row
+     *
+     * @param string     $field          field name
+     * @param array      $arrDescription field description from Zend model
+     * @param array|null $referenceMap   referenc map from Zend model
+     * @param boolean    $showFieldLabel include 'fieldLabel' into editor section (for form view)
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
     protected function _getEditorFromDbRow($field, array $arrDescription, $referenceMap, $showFieldLabel = true)
     {
         $jsonParams = array(
@@ -322,26 +430,105 @@ class ExtjsGenerator_ExtjsGenerator
             case 'date':
             case 'timestamp':
                 $jsonParams['xtype'] = 'datefield';
+                $jsonParams['format'] = 'Y-m-d H:i:s';
                 break;
             default:
                 $jsonParams['xtype'] = 'textfield';
                 break;
         }
 
+        // allow blank
         $jsonParams['allowBlank'] = $arrDescription['NULLABLE'];
 
+        // disabled for primary?
         $jsonParams['disabled'] = $arrDescription['PRIMARY'];
+
+        // reference table combobox in editor
+        //TODO m2m
+        if (is_array($referenceMap)) {
+            foreach ($referenceMap as $item) {
+                //TODO check arrays
+                if (is_string($item['columns'])) {
+                    if ($item['columns'] == $field) {
+                        $jsonParams = array_merge(
+                            $jsonParams,
+                            array(
+                                'xtype'     => 'combobox',
+                                'typeAhead' => true,
+                            )
+                        );
+
+                        if (isset($item['refExtjsGeneratorUseStore']) && $item['refExtjsGeneratorUseStore']) {
+                            $jsonParams = array_merge(
+                                $jsonParams,
+                                array(
+                                    'queryMode'    => self::STORE_QUERYMODE_REMOTE,
+                                    'valueField'   => $item['refExtjsGeneratorColumnsId'],
+                                    'displayField' => $item['refExtjsGeneratorColumnsTitle'],
+                                    'store'        => mb_strcut(
+                                        $item['refTableClass'],
+                                        mb_strlen('Application_Model_DbModel_')
+                                    ),
+                                )
+                            );
+                        } else {
+                            $refTableClass = $item['refTableClass'];
+                            $arrData = array();
+                            try {
+                                $objModel = new $refTableClass();
+                                //TODO JSON quote required
+                                $arrData = $this->_makeComboboxStore(
+                                    $objModel->getPairs(
+                                        $item['refExtjsGeneratorColumnsId'],
+                                        $item['refExtjsGeneratorColumnsTitle']
+                                    )
+                                );
+                            } catch (Zend_Exception $e) {
+                                //TODO custom exception
+                                $arrData = array(
+                                    $item['refExtjsGeneratorColumnsId']    => null,
+                                    $item['refExtjsGeneratorColumnsTitle'] => "EXCEPTION MODEL: '{$refTableClass}'",
+                                );
+                            }
+
+                            $jsonParams = array_merge(
+                                $jsonParams,
+                                array(
+                                    'store'     => $arrData,
+                                    'queryMode' => self::STORE_QUERYMODE_LOCAL,
+                                )
+                            );
+
+                        }
+                    }
+                }
+            }
+        }
 
         return $jsonParams;
     }
 
+    /**
+     * get dbmodel name from js model\store file name
+     *
+     * @param string $jsName js file name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
     protected function _getDbModelNameByJsName($jsName)
     {
         return str_replace('.js', '', $jsName);
     }
 
     /**
+     * get dbmodel instance by model name
+     *
+     * @param string $dbModelName model name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
      * @return Zend_Db_Table
+     * @throw Exception
      */
     protected function _getDbModelByName($dbModelName)
     {
@@ -354,9 +541,58 @@ class ExtjsGenerator_ExtjsGenerator
         return new $dbModelName();
     }
 
-    protected function _makeJsCode(array $arrCode)
+    /**
+     * assemble js code from array
+     *
+     * @param array $arrCode array js code
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string
+     */
+    protected function _assembleJsCode(array $arrCode)
     {
-        return Zend_Json_Encoder::encode($arrCode);
+        $strCode = Zend_Json_Encoder::encode($arrCode);
+
+        /*
+         * FIX
+         * from: /... store:"[['1', 'One'], ['2', 'Two']]", .../
+         * to:   /... store:[['1', 'One'], ['2', 'Two']],   .../
+         */
+        $strCode = mb_eregi_replace('(.*)("store":)"([^"]+)"(.*)', '\1\2\3\4', $strCode);
+
+        /*
+         * FIX renderer function
+         * from: /... "renderer":"this.renderComboboxValue", .../
+         * to:   /... "renderer":this.renderComboboxValue,   .../
+         */
+        $strCode = mb_eregi_replace('(.*)("renderer":)"([^"]+)"(.*)', '\1\2\3\4', $strCode);
+
+        return $strCode;
+    }
+
+    /**
+     * make js combobox store code (2-dimensional array)
+     * [['1','One'], ['2','Two'], ['3','Three']]
+     * @see http://docs.sencha.com/ext-js/4-0/#!/api/Ext.form.field.ComboBox-cfg-store
+     *
+     * @param array $arrData array with data
+     * array(
+     *     '1' => 'One'
+     *     '2' => 'Two'
+     *     '3' => 'Tree'
+     * )
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return string [['1','One'], ['2','Two'], ['3','Three']]
+     */
+    protected function _makeComboboxStore(array $arrData)
+    {
+        $arrResult = array();
+        foreach ($arrData as $key => $value) {
+            $arrResult[] = "['{$key}','{$value}']";
+        }
+
+        return '[' . implode(',', $arrResult)  . ']';
     }
 
 }

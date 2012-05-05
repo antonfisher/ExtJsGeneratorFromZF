@@ -1,17 +1,33 @@
 <?php
 
+/**
+ * Default error controller
+ *
+ * @category  Controllers
+ * @package   ErrorController
+ * @author    Anton Fischer <a.fschr@gmail.com>
+ * @copyright 2012 (c) none
+ * @license   http://none BSD License
+ * @link      https://github.com/antonfisher/ExtJsGeneratorFromZF
+ */
 class ErrorController extends Zend_Controller_Action
 {
 
+    /**
+     * Error viewer
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return null
+     */
     public function errorAction()
     {
         $errors = $this->_getParam('error_handler');
-        
+
         if (!$errors || !$errors instanceof ArrayObject) {
             $this->view->message = 'You have reached the error page';
             return;
         }
-        
+
         switch ($errors->type) {
             case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ROUTE:
             case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
@@ -28,21 +44,27 @@ class ErrorController extends Zend_Controller_Action
                 $this->view->message = 'Application error';
                 break;
         }
-        
+
         // Log exception, if logger available
         if ($log = $this->getLog()) {
             $log->log($this->view->message, $priority, $errors->exception);
             $log->log('Request Parameters', $priority, $errors->request->getParams());
         }
-        
+
         // conditionally display exceptions
         if ($this->getInvokeArg('displayExceptions') == true) {
             $this->view->exception = $errors->exception;
         }
-        
+
         $this->view->request   = $errors->request;
     }
 
+    /**
+     * Get log
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return Zend_Log
+     */
     public function getLog()
     {
         $bootstrap = $this->getInvokeArg('bootstrap');
