@@ -147,17 +147,17 @@ class ExtjsGenerator_ExtjsGenerator
         $dbModel     = $this->_getDbModelByName($dbModelName);
 
         $jsonParams = array(
-            'extend' => 'Ext.window.Window',
+            'extend' => 'ExtG.window.Window',
             'title'  => $dbModelName,
             'items'  => array(
                 'xtype' => 'form',
                 'border' => 0,
                 'bodyPadding' => 5,
-                'buttons' => array(
-                    array(
-                        'text' => 'Save'
-                    )
-                )
+//                'buttons' => array(
+//                    array(
+//                        'text' => 'Save'
+//                    )
+//                )
             )
         );
 

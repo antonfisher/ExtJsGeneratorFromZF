@@ -2,7 +2,7 @@ Ext.define('App.controller.DbAdmin', {
     extend: 'Ext.app.Controller',
 
     views: [
-        'dbAdmin.Viewport',
+        'dbAdmin.Viewport'
     ],
 
     //TODO remove router for store
@@ -22,8 +22,9 @@ Ext.define('App.controller.DbAdmin', {
         //'Extjs-generator.view.type.gridRowEdit.dbmodel.Flowers'
     ],
 
-    init: function() {
-      this.callParent(arguments);
+    init: function () {
+        this.callParent(arguments);
     }
 
 });
+

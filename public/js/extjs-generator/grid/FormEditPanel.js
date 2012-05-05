@@ -68,6 +68,13 @@ Ext.define('ExtG.grid.FormEditPanel', {
         ];
 
         this.callParent(arguments);
+
+        this.addListener('itemdblclick', function(view, record) {
+            console.log('---', arguments);
+            var w = Ext.create('Extjs-generator.view.type.formWindow.dbmodel.' + me.store.storeId);
+            w.loadRecord(record);
+            w.show();
+        });
     }
 
 });
