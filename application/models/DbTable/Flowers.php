@@ -15,5 +15,7 @@ class Application_Model_DbTable_Flowers extends ExtjsGenerator_Db_Table_Abstract
 
     protected $_name = 'flowers';
 
+    protected $_dependedTables = array('Application_Model_DbModel_BouquetsFlowers');
+
 }
 

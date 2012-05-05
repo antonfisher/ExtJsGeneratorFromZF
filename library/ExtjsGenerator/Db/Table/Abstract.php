@@ -194,6 +194,33 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
     }
 
     /**
+     * Get id-title pairs as assoc array (ex. for comboboxes)
+     *
+     * @param string $columnKey   key column name
+     * @param string $columnValue value colum name
+     *
+     * @author Anton Fischer <a.fschr@gmail.com>
+     * @return array
+     */
+    public function getPairs($columnKey, $columnValue)
+    {
+        $arrResult = array();
+
+        $select = $this->select();
+        $select->from(
+            $this->getName(),
+            array($columnKey, $columnValue),
+            $this->getSchema()
+        );
+
+        foreach ($this->fetchAll($select)->toArray() as $item) {
+            $arrResult[($item[$columnKey])] = $item[$columnValue];
+        }
+
+        return $arrResult;
+    }
+
+    /**
      * Pre-save normalisation db field data by required types
      *
      * @param array $arrItem array for normalise

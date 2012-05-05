@@ -15,5 +15,17 @@ class Application_Model_DbTable_Bouquets extends ExtjsGenerator_Db_Table_Abstrac
 
     protected $_name = 'bouquets';
 
+    protected $_referenceMap = array(
+        'Wrappers' => array(
+            'columns'                       => 'id_wrapper',
+            'refTableClass'                 => 'Application_Model_DbTable_Wrappers',
+            'refExtjsGeneratorColumnsId'    => 'id',
+            'refExtjsGeneratorColumnsTitle' => 'title',
+            //'refExtjsGeneratorUseStore' => true,
+        )
+    );
+
+    protected $_dependedTables = array('Application_Model_DbModel_BouquetsFlowers');
+
 }
 

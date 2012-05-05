@@ -15,5 +15,7 @@ class Application_Model_DbTable_Wrappers extends ExtjsGenerator_Db_Table_Abstrac
 
     protected $_name = 'wrappers';
 
+    protected $_dependedTables = array('Application_Model_DbModel_Bouquets');
+
 }
 

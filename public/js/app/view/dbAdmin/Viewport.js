@@ -10,7 +10,7 @@ Ext.define('App.view.dbAdmin.Viewport', {
         layout: 'fit',
         items: [
             {
-                xtype: 'Extjs-generator-view-type-gridFormEdit-dbmodel-Bouquets',
+                xtype: 'Extjs-generator-view-type-gridRowEdit-dbmodel-Bouquets',
                 title: 'Bouquets'
 //            },{
 //                xtype: 'Extjs-generator-view-type-gridRowEdit-dbmodel-Flowers',
