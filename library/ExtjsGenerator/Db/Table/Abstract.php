@@ -175,6 +175,7 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
             $select->limit($arrParams['limit'], $start);
         }
 
+        //TODO Warning: Invalid argument supplied for foreach() in /home/fisher/workspace/extjs-generator-from-zf/library/ExtjsGenerator/Db/Table/Abstract.php on line 179
         if (!empty($arrParams['sort'])) {
             foreach ($arrParams['sort'] as $sortItem) {
                 $select->order($sortItem);
