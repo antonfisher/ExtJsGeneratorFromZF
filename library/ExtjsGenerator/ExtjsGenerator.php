@@ -170,12 +170,29 @@ class ExtjsGenerator_ExtjsGenerator
                 $jsonParams['extend'] = 'ExtG.grid.RowEditPanel';
                 break;
             default :
+                $jsonParams['extend'] = 'ExtG.grid.Panel';
                 break;
         }
 
-        $referenceMap = $dbModel->info(Zend_Db_Table::REFERENCE_MAP);
         foreach ($dbModel->info(Zend_Db_Table::METADATA) as $field => $arrDescription) {
-            $jsonParams['columns'][] = $this->_getGridColumnFromDbRow($field, $arrDescription, $referenceMap);
+            $jsonParams['columns'][] = $this->_getGridColumnFromDbRow($field, $arrDescription, $dbModel);
+        }
+
+        // many-to-many
+        $referenceMapM2M = $dbModel->info(ExtjsGenerator_Db_Table_Abstract::REFERENCE_MAP_M2M);
+        if (is_array($referenceMapM2M)) {
+            foreach ($referenceMapM2M as $k => $item) {
+                //TODO check arrays
+                //TODO replace icon
+                if (is_string($item['columns'])) {
+                    $jsonParams['columns'][] = array(
+                        'xtype'   => 'actioncolumn',
+                        'header'  => $k,
+                        'icon'    => '/js/extjs/resources/themes/images/default/dd/drop-add.gif',
+                        'handler' => "function(){return this.up('grid').showM2MWindow.apply(this, arguments)}",
+                    );
+                }
+            }
         }
 
         $jsonParams = $this->_assembleJsCode($jsonParams);
@@ -214,9 +231,8 @@ class ExtjsGenerator_ExtjsGenerator
             )
         );
 
-        $referenceMap = $dbModel->info(Zend_Db_Table::REFERENCE_MAP);
         foreach ($dbModel->info(Zend_Db_Table::METADATA) as $field => $arrDescription) {
-            $jsonParams['items']['items'][] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap);
+            $jsonParams['items']['items'][] = $this->_getEditorFromDbRow($field, $arrDescription, $dbModel);
         }
 
         $jsonParams = $this->_assembleJsCode($jsonParams);
@@ -274,7 +290,7 @@ class ExtjsGenerator_ExtjsGenerator
                     break;
                 case self::STORE_ACTION_CREATE:
                     foreach ($arrRawBody as &$arrItem) {
-                        //возвращать arrItems обратно клиенту
+                        //TODO возвращать arrItems обратно клиенту
                         $arrItem['id'] = $dbModel->extjsStoreCreate($arrItem, $arrParams);
                     }
                     unset($arrItem);
@@ -352,14 +368,14 @@ class ExtjsGenerator_ExtjsGenerator
     /**
      * get grid column from db row
      *
-     * @param string     $field          field name
-     * @param array      $arrDescription field description from Zend model
-     * @param array|null $referenceMap   referenc map from Zend model
+     * @param string                           $field          field name
+     * @param array                            $arrDescription field description from Zend model
+     * @param ExtjsGenerator_Db_Table_Abstract $dbModel        Zend model
      *
      * @author Anton Fischer <a.fschr@gmail.com>
      * @return array
      */
-    protected function _getGridColumnFromDbRow($field, array $arrDescription, $referenceMap)
+    protected function _getGridColumnFromDbRow($field, array $arrDescription, $dbModel)
     {
         $jsonParams = array(
             'header'    => $field,
@@ -371,7 +387,7 @@ class ExtjsGenerator_ExtjsGenerator
         switch ($arrDescription['DATA_TYPE']) {
             case 'boolean':
             case 'bool':
-                $jsonParams['editor']    = 'checkboxfield';
+//                $jsonParams['xtype']     = 'checkcolumn';
                 $jsonParams['xtype']     = 'booleancolumn';
                 $jsonParams['trueText']  = 'Yes';
                 $jsonParams['falseText'] = 'No';
@@ -385,7 +401,7 @@ class ExtjsGenerator_ExtjsGenerator
                 break;
         }
 
-        $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $referenceMap, false);
+        $jsonParams['editor'] = $this->_getEditorFromDbRow($field, $arrDescription, $dbModel, false);
 
         if (isset($jsonParams['editor']['xtype']) && 'combobox' == $jsonParams['editor']['xtype']) {
             $jsonParams['renderer'] = 'function(){return this.renderComboboxValue.apply(this, arguments)}';
@@ -397,15 +413,15 @@ class ExtjsGenerator_ExtjsGenerator
     /**
      * get grid column editor from db row
      *
-     * @param string     $field          field name
-     * @param array      $arrDescription field description from Zend model
-     * @param array|null $referenceMap   referenc map from Zend model
-     * @param boolean    $showFieldLabel include 'fieldLabel' into editor section (for form view)
+     * @param string                           $field          field name
+     * @param array                            $arrDescription field description from Zend model
+     * @param ExtjsGenerator_Db_Table_Abstract $dbModel        Zend model
+     * @param boolean                          $showFieldLabel include 'fieldLabel' into editor section (for form view)
      *
      * @author Anton Fischer <a.fschr@gmail.com>
      * @return array
      */
-    protected function _getEditorFromDbRow($field, array $arrDescription, $referenceMap, $showFieldLabel = true)
+    protected function _getEditorFromDbRow($field, array $arrDescription, $dbModel, $showFieldLabel = true)
     {
         $jsonParams = array(
             'name'  => $field,
@@ -444,7 +460,7 @@ class ExtjsGenerator_ExtjsGenerator
         $jsonParams['disabled'] = $arrDescription['PRIMARY'];
 
         // reference table combobox in editor
-        //TODO m2m
+        $referenceMap = $dbModel->info(Zend_Db_Table::REFERENCE_MAP);
         if (is_array($referenceMap)) {
             foreach ($referenceMap as $item) {
                 //TODO check arrays
@@ -553,12 +569,13 @@ class ExtjsGenerator_ExtjsGenerator
     {
         $strCode = Zend_Json_Encoder::encode($arrCode);
 
+        //TODO add method _notJsonQuote()
         /*
          * FIX
          * from: /... store:"[['1', 'One'], ['2', 'Two']]", .../
          * to:   /... store:[['1', 'One'], ['2', 'Two']],   .../
          */
-        $strCode = mb_eregi_replace('(.*)("store":)"([^"]+)"(.*)', '\1\2\3\4', $strCode);
+        $strCode = mb_eregi_replace('(.*)("store":)"(Ext[^"]+)"(.*)', '\1\2\3\4', $strCode);
 
         /*
          * FIX renderer function
@@ -566,6 +583,13 @@ class ExtjsGenerator_ExtjsGenerator
          * to:   /... "renderer":this.renderComboboxValue,   .../
          */
         $strCode = mb_eregi_replace('(.*)("renderer":)"([^"]+)"(.*)', '\1\2\3\4', $strCode);
+
+        /*
+         * FIX handler function
+         * from: /... "handler":"function(){}", .../
+         * to:   /... "handler":function(){},   .../
+         */
+        $strCode = mb_eregi_replace('(.*)("handler":)"([^"]+)"(.*)', '\1\2\3\4', $strCode);
 
         return $strCode;
     }

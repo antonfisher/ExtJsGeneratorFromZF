@@ -1,1 +1,3 @@
 /nbproject
+/tests/log
+!/tests/log/dummy

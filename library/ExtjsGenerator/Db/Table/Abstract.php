@@ -13,6 +13,10 @@
 abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
 {
 
+    const REFERENCE_MAP_M2M = 'referenceMapM2M';
+
+    protected $_referenceMapM2M = null;
+
     /**
      * Getter for _name
      *
@@ -219,6 +223,24 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
         }
 
         return $arrResult;
+    }
+
+    /**
+     * Returns table information.
+     *
+     * You can elect to return only a part of this information by supplying its key name,
+     * otherwise all information is returned as an array.
+     *
+     * @param  string $key The specific info part to return OPTIONAL
+     * @return mixed
+     */
+    public function info($key = null)
+    {
+        if (self::REFERENCE_MAP_M2M == $key) {
+            return $this->_referenceMapM2M;
+        }
+
+        return parent::info($key);
     }
 
     /**
