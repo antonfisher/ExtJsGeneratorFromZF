@@ -24,6 +24,7 @@ class ExtjsGenerator_ExtjsGenerator
     const VIEW_GRID           = 'grid';
     const VIEW_GRID_FORM_EDIT = 'gridFormEdit';
     const VIEW_GRID_ROW_EDIT  = 'gridRowEdit';
+    const VIEW_GRID_M2M       = 'gridM2M';
 
     const VIEW_FORM        = 'form';
     const VIEW_FORM_WINDOW = 'formWindow';
@@ -126,6 +127,7 @@ class ExtjsGenerator_ExtjsGenerator
             case self::VIEW_GRID:
             case self::VIEW_GRID_FORM_EDIT:
             case self::VIEW_GRID_ROW_EDIT:
+            case self::VIEW_GRID_M2M:
                 $jsCode = $this->_getGridCode($dbModel, $type);
                 break;
             case self::VIEW_FORM:
@@ -142,7 +144,7 @@ class ExtjsGenerator_ExtjsGenerator
     }
 
     /**
-     * Get Extjs grid java script code
+     * Get Extjs grid java-script code
      *
      * @param string $jsName grid name
      * @param string $type   type of grid
@@ -169,6 +171,9 @@ class ExtjsGenerator_ExtjsGenerator
             case self::VIEW_GRID_ROW_EDIT:
                 $jsonParams['extend'] = 'ExtG.grid.RowEditPanel';
                 break;
+            case self::VIEW_GRID_M2M:
+                $jsonParams['extend'] = 'ExtG.grid.M2MPanel';
+                break;
             default :
                 $jsonParams['extend'] = 'ExtG.grid.Panel';
                 break;
@@ -178,21 +183,31 @@ class ExtjsGenerator_ExtjsGenerator
             $jsonParams['columns'][] = $this->_getGridColumnFromDbRow($field, $arrDescription, $dbModel);
         }
 
-        // many-to-many
-        $referenceMapM2M = $dbModel->info(ExtjsGenerator_Db_Table_Abstract::REFERENCE_MAP_M2M);
-        if (is_array($referenceMapM2M)) {
-            foreach ($referenceMapM2M as $k => $item) {
-                //TODO check arrays
-                //TODO replace icon
-                if (is_string($item['columns'])) {
-                    $jsonParams['columns'][] = array(
-                        'xtype'   => 'actioncolumn',
-                        'header'  => $k,
-                        'icon'    => '/js/extjs/resources/themes/images/default/dd/drop-add.gif',
-                        'handler' => "function(){return this.up('grid').showM2MWindow.apply(this, arguments)}",
-                    );
+        if ($type === self::VIEW_GRID_FORM_EDIT || $type === self::VIEW_GRID_ROW_EDIT) {
+            // many-to-many
+            $referenceMapM2M = $dbModel->info(ExtjsGenerator_Db_Table_Abstract::REFERENCE_MAP_M2M);
+            if (is_array($referenceMapM2M)) {
+                foreach ($referenceMapM2M as $k => $item) {
+                    //TODO check arrays
+                    //TODO replace icon
+                    if (is_string($item['columns'])) {
+                        $jsonParams['columns'][] = array(
+                            'xtype'   => 'actioncolumn',
+                            'header'  => $k,
+                            'icon'    => '/js/extjs/resources/themes/images/default/dd/drop-add.gif',
+                            'store'   => $k,
+                            'handler' => "function(){return this.up('grid').showM2MWindow.apply(this, arguments)}",
+                        );
+                    }
                 }
             }
+        } else if ($type === self::VIEW_GRID_M2M) {
+            $jsonParams['columns'][] = array(
+                'xtype'   => 'checkboxcolumn',
+                'header'  => 'Link',
+                'store'   => $k,
+                //'handler' => "function(){return this.up('grid').showM2MWindow.apply(this, arguments)}",
+            );
         }
 
         $jsonParams = $this->_assembleJsCode($jsonParams);
