@@ -15,6 +15,10 @@ Ext.application({
         'DbAdmin'
     ],
 
+//    requires: [
+//        'Ext.ux.form.MultiSelect'
+//    ],
+
     launch: function () {
         Ext.create('Ext.container.Viewport', {
             layout: 'fit',

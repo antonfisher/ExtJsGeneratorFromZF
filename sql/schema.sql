@@ -1,6 +1,18 @@
+--------------------
+-- Main database: --
+--------------------
+
 -- CREATE USER egfzf PASSWORD 'pass';
 -- CREATE DATABASE egfzf ENCODING 'UTF8' OWNER egfzf;
 -- GRANT ALL ON DATABASE egfzf TO egfzf WITH GRANT OPTION;
+
+------------------------------
+-- Test database (if used): --
+------------------------------
+
+-- CREATE USER egfzf_test PASSWORD 'pass_test';
+-- CREATE DATABASE egfzf_test ENCODING 'UTF8' OWNER egfzf_test;
+-- GRANT ALL ON DATABASE egfzf_test TO egfzf_test WITH GRANT OPTION;
 
 BEGIN;
 

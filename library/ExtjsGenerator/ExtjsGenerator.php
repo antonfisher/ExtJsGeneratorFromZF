@@ -454,6 +454,7 @@ class ExtjsGenerator_ExtjsGenerator
                             $jsonParams,
                             array(
                                 'xtype'     => 'combobox',
+                                //'xtype'     => 'multiselect',
                                 'typeAhead' => true,
                             )
                         );
@@ -467,7 +468,7 @@ class ExtjsGenerator_ExtjsGenerator
                                     'displayField' => $item['refExtjsGeneratorColumnsTitle'],
                                     'store'        => mb_strcut(
                                         $item['refTableClass'],
-                                        mb_strlen('Application_Model_DbModel_')
+                                        mb_strlen('Application_Model_DbTable_')
                                     ),
                                 )
                             );
