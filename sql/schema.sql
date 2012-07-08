@@ -85,6 +85,6 @@ ALTER TABLE "bouquets_flowers"
   REFERENCES "flowers" ("id")
   ON UPDATE CASCADE ON DELETE CASCADE;
 
-ROLLBACK;
---COMMIT;
+--ROLLBACK;
+COMMIT;
 

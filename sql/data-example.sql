@@ -4,6 +4,11 @@
 
 BEGIN;
 
+TRUNCATE TABLE "flowers" CASCADE;
+TRUNCATE TABLE "wrappers" CASCADE;
+TRUNCATE TABLE "bouquets" CASCADE;
+TRUNCATE TABLE "bouquets_flowers" CASCADE;
+
 INSERT INTO "flowers" ("id", "title") VALUES
 ('1', 'Rose'),
 ('2', 'Tulip'),
@@ -31,6 +36,6 @@ INSERT INTO "bouquets_flowers" ("id", "id_bouquet", "id_flower") VALUES
 ('5', '2', '5'),
 ('6', '3', '1');
 
-ROLLBACK;
---COMMIT;
+--ROLLBACK;
+COMMIT;
 
