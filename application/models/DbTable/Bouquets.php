@@ -19,13 +19,41 @@ class Application_Model_DbTable_Bouquets extends ExtjsGenerator_Db_Table_Abstrac
         'Wrappers' => array(
             'columns'                       => 'id_wrapper',
             'refTableClass'                 => 'Application_Model_DbTable_Wrappers',
+            'refColumns'                    => 'id',
             'refExtjsGeneratorColumnsId'    => 'id',
             'refExtjsGeneratorColumnsTitle' => 'title',
             //'refExtjsGeneratorUseStore' => true,
         )
     );
 
-    protected $_dependedTables = array('Application_Model_DbTable_BouquetsFlowers');
+    /**
+     * Many-to-many
+     *
+     * +----------+      +------------------+
+     * | bouquets |      | bouquets_flowers |      +---------+
+     * |----------|      |------------------|      | flowers |
+     * | id       |<-----| id_bouquet       |      |---------|
+     * | title    |      | id_flower        |----->| id      |
+     * | ...      |      | ...              |      | title   |
+     * +----------+      +------------------+      | ...     |
+     *                                             +---------+
+     *
+     * @var array
+     */
+    protected $_referenceMapM2M = array(
+        'Flowers' => array(
+            'columns'                       => 'id',
+            'columnsM2M'                    => 'id_bouquet',
+            'refColumnsM2M'                 => 'id_flower',
+            'refColumns'                    => 'id',
+            'refTableClassM2M'              => 'Application_Model_DbTable_BouquetsFlowers',
+            'refTableClass'                 => 'Application_Model_DbTable_Flowers',
+            'refExtjsGeneratorColumnsId'    => 'id',
+            'refExtjsGeneratorColumnsTitle' => 'title'
+        )
+    );
+
+    protected $_dependedTables = array('Application_Model_DbModel_BouquetsFlowers');
 
 }
 

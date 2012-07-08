@@ -21,6 +21,8 @@ Ext.define('App.controller.DbAdmin', {
     requires: [
         //'Extjs-generator.view.type.gridFormEdit.dbmodel.Bouquets',
         'Extjs-generator.view.type.gridRowEdit.dbmodel.Bouquets',
+        //'Extjs-generator.view.type.gridRowEdit.dbmodel.Flowers',
+        'Extjs-generator.view.type.grid.dbmodel.Flowers',
         //'Extjs-generator.view.type.formWindow.dbmodel.Flowers',
         //'Extjs-generator.view.type.gridRowEdit.dbmodel.Flowers'
     ],

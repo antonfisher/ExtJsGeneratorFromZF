@@ -1,2 +1,4 @@
 /nbproject
 /tests/tmp
+!/tests/tmp/dummy
+!/tests/tmp/report/dummy

@@ -9,6 +9,10 @@ Ext.define('ExtG.grid.Panel', {
         trackOver: false
     },
 
+//    requires: [
+//        'Ext.ux.CheckColumn'
+//    ],
+
     initComponent: function() {
         // merge with initial config
         if (this.initialConfig.columns != undefined) {
@@ -67,6 +71,32 @@ Ext.define('ExtG.grid.Panel', {
             }
         }
         return value;
+    },
+
+    showM2MWindow: function() {
+        console.log('Call showM2MWindow()', arguments, this);
+
+        var me = this;
+
+        Ext.require(
+            'Extjs-generator.view.type.gridM2M.dbmodel.' + me.initialConfig.store,
+            function() {
+                //console.log(Ext.create('Extjs-generator.view.type.gridM2M.dbmodel.Flowers'));
+                var window = Ext.create('Ext.window.Window', {
+                    title: 'Link',
+                    width: 400,
+                    height: 300,
+                    layout: 'fit',
+                    items: {
+                        //xtype: 'Extjs-generator-view-type-gridRowEdit-dbmodel-Flowers'
+                        // TODO to format
+                        xtype: 'Extjs-generator-view-type-gridM2M-dbmodel-' + me.initialConfig.store
+                    }
+                });
+                window.show();
+                window.down('grid').getStore().load();
+            }
+        );
     }
 
 });
