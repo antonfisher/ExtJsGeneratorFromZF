@@ -205,7 +205,7 @@ class ExtjsGenerator_ExtjsGenerator
             $jsonParams['columns'][] = array(
                 'xtype'   => 'checkboxcolumn',
                 'header'  => 'Link',
-                'store'   => $k,
+                //'store'   => $k,
                 //'handler' => "function(){return this.up('grid').showM2MWindow.apply(this, arguments)}",
             );
         }
@@ -266,6 +266,7 @@ class ExtjsGenerator_ExtjsGenerator
      * @param Zend_Controller_Request_Abstract $request    request
      *
      * @author Anton Fischer <a.fschr@gmail.com>
+     * @throw Zend_Exception
      * @return string
      */
     public function storeAction($actionType, Zend_Controller_Request_Abstract $request)
@@ -321,7 +322,7 @@ class ExtjsGenerator_ExtjsGenerator
                     }
                     break;
                 default:
-                    throw new Exception('Not valid store action.');
+                    throw new Zend_Exception('Not valid store action.');
                     break;
             }
 
@@ -434,6 +435,7 @@ class ExtjsGenerator_ExtjsGenerator
      * @param boolean                          $showFieldLabel include 'fieldLabel' into editor section (for form view)
      *
      * @author Anton Fischer <a.fschr@gmail.com>
+     * @throw Zend_Exception
      * @return array
      */
     protected function _getEditorFromDbRow($field, array $arrDescription, $dbModel, $showFieldLabel = true)
@@ -560,14 +562,14 @@ class ExtjsGenerator_ExtjsGenerator
      *
      * @author Anton Fischer <a.fschr@gmail.com>
      * @return Zend_Db_Table
-     * @throw Exception
+     * @throw Zend_Exception
      */
     protected function _getDbModelByName($dbModelName)
     {
         $dbModelName = 'Application_Model_DbTable_' . $dbModelName;
 
         if (!class_exists($dbModelName)) {
-            throw new Exception('ExtjsGenerator: dbmodel class does not exist: ' . $dbModelName);
+            throw new Zend_Exception('ExtjsGenerator: dbmodel class does not exist: ' . $dbModelName);
         }
 
         return new $dbModelName();
@@ -613,7 +615,6 @@ class ExtjsGenerator_ExtjsGenerator
     /**
      * make js combobox store code (2-dimensional array)
      * [['1','One'], ['2','Two'], ['3','Three']]
-     * @see http://docs.sencha.com/ext-js/4-0/#!/api/Ext.form.field.ComboBox-cfg-store
      *
      * @param array $arrData array with data
      * array(
@@ -622,6 +623,7 @@ class ExtjsGenerator_ExtjsGenerator
      *     '3' => 'Tree'
      * )
      *
+     * @see    http://docs.sencha.com/ext-js/4-0/#!/api/Ext.form.field.ComboBox-cfg-store
      * @author Anton Fischer <a.fschr@gmail.com>
      * @return string [['1','One'], ['2','Two'], ['3','Three']]
      */

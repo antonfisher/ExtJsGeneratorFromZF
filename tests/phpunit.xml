@@ -1,4 +1,4 @@
-<phpunit bootstrap="./bootstrap.php" colors="true">
+<phpunit bootstrap="./bootstrap.php" colors="true" processIsolation="true">
     <testsuite name="Application">
         <directory>./application/*</directory>
     </testsuite>
@@ -12,10 +12,11 @@
             </exclude>
         </whitelist>
     </filter>
-
+    <!--
     <logging>
         <log type="coverage-html" target="./tmp/report" charset="UTF-8" yui="true" highlight="false"
             lowUpperBound="35" highLowerBound="70"/>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
     </logging>
+    -->
 </phpunit>

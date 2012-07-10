@@ -98,6 +98,7 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
      * @param array $arrParams array of request params
      *
      * @author Anton Fischer <a.fschr@gmail.com>
+     * @throw Zend_Exception
      * @return mixed
      */
     public function extjsStoreUpdate(array $arrItem, array $arrParams = array())
@@ -111,7 +112,7 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
             return $objRow->save();
         }
 
-        throw new Exception("Primary keys for table '{$this->getName()}' does not defined.");
+        throw new Zend_Exception("Primary keys for table '{$this->getName()}' does not defined.");
     }
 
     /**
@@ -143,6 +144,7 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
      * @param array $arrParams array of request params
      *
      * @author Anton Fischer <a.fschr@gmail.com>
+     * @throw Zend_Exception
      * @return mixed
      */
     public function extjsStoreDestroy(array $arrItem, array $arrParams = array())
@@ -156,10 +158,10 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
                 return $objRow->delete();
             }
 
-            throw new Exception("Row does not found in '{$this->getName()}'.");
+            throw new Zend_Exception("Row does not found in '{$this->getName()}'.");
         }
 
-        throw new Exception("Primary keys for table '{$this->getName()}' does not defined.");
+        throw new Zend_Exception("Primary keys for table '{$this->getName()}' does not defined.");
     }
 
     /**
@@ -179,7 +181,8 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
             $select->limit($arrParams['limit'], $start);
         }
 
-        //TODO Warning: Invalid argument supplied for foreach() in /home/fisher/workspace/extjs-generator-from-zf/library/ExtjsGenerator/Db/Table/Abstract.php on line 179
+        //TODO Warning: Invalid argument supplied for foreach() in
+        // /home/fisher/workspace/extjs-generator-from-zf/library/ExtjsGenerator/Db/Table/Abstract.php on line 179
         if (!empty($arrParams['sort'])) {
             foreach ($arrParams['sort'] as $sortItem) {
                 $select->order($sortItem);
@@ -231,7 +234,8 @@ abstract class ExtjsGenerator_Db_Table_Abstract extends Zend_Db_Table_Abstract
      * You can elect to return only a part of this information by supplying its key name,
      * otherwise all information is returned as an array.
      *
-     * @param  string $key The specific info part to return OPTIONAL
+     * @param string $key The specific info part to return OPTIONAL
+     *
      * @return mixed
      */
     public function info($key = null)
